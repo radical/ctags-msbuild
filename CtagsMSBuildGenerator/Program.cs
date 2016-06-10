@@ -32,6 +32,11 @@ namespace CtagsMSBuildGenerator
 				return;
 			}
 
+			if (!recurse && remaining.Count == 0) {
+				Console.WriteLine ("No files specified. Try ctags-msbuild -h");
+				return;
+			}
+
 			if (recurse && remaining.Count != 0) {
 				Console.WriteLine ("Use either -R or explicit filenames, but not both");
 				PrintUsage ();
