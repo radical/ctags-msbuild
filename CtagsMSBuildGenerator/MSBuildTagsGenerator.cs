@@ -6,11 +6,12 @@ using System.Linq;
 
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Construction;
+using Microsoft.Build.Execution;
 
 namespace CtagsMSBuildGenerator
 {
 	// TODO
-	// - items/properties created in targets
+	// unknown items/props in Inputs/Outputs/DependsOn etc
 	// - parallel
 
 	public class MSBuildTagsGenerator
@@ -83,6 +84,8 @@ namespace CtagsMSBuildGenerator
 				AddTag (prop.Name, prop.Xml.Location.File, prop.Xml.Location.Line, "p", String.Empty);
 				filesSeenHere.Add (prop.Xml.Location.File);
 			}
+
+
 		}
 
 		void ParseItems (Project project, HashSet<string> filesSeenHere)
@@ -114,11 +117,31 @@ namespace CtagsMSBuildGenerator
 				AddTag (target.Name, target.Location.File, target.Location.Line, "t", String.Empty);
 				filesSeenHere.Add (target.Location.File);
 			}
+
+			foreach (var t in project.Targets.Values) {
+				foreach (var c in t.Children) {
+					var items = c as ProjectItemGroupTaskInstance;
+					if (items != null) {
+						foreach (var item in items.Items) {
+							AddTag (item.ItemType, item.Location.File, item.Location.Line, "i", String.Empty);
+							filesSeenHere.Add (item.Location.File);
+						}
+						continue;
+					}
+
+					var props = c as ProjectPropertyGroupTaskInstance;
+					if (props != null) {
+						foreach (var prop in props.Properties) {
+							AddTag (prop.Name, prop.Location.File, prop.Location.Line, "p", String.Empty);
+							filesSeenHere.Add (prop.Location.File);
+						}
+					}
+				}
+			}
 		}
 
 		void AddTag (string tagName, string tagFile, int lineNumber, string type, string comment)
 		{
-			//$"{tagName}\t{tagFile}\t{lineNumber};\"\t{type}");
 			var key = $"{type}:{tagName}:{tagFile}:{lineNumber}";
 			fullLines [key] = Tuple.Create (tagName, GetTagLineFunc (tagName, tagFile, lineNumber, type, comment));
 		}
