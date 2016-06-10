@@ -1,2 +1,4 @@
 #!/bin/sh
-mono ctags-msbuild.exe $*
+ABSOLUTE_PATH=$(cd `dirname "${BASH_SOURCE[0]}"` && pwd)/`basename "${BASH_SOURCE[0]}"`
+BIN_DIR=`dirname $ABSOLUTE_PATH`
+mono $MONO_OPTIONS $BIN_DIR/ctags-msbuild.exe $*
