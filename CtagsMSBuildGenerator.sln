@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtagsMSBuildParser", "CtagsMSBuildParser\CtagsMSBuildParser.csproj", "{5C70A815-6D3C-4812-AF0A-04C139FF490F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtagsMSBuildGenerator", "CtagsMSBuildGenerator\CtagsMSBuildGenerator.csproj", "{5C70A815-6D3C-4812-AF0A-04C139FF490F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

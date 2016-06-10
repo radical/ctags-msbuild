@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{5C70A815-6D3C-4812-AF0A-04C139FF490F}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>CtagsMSBuildParser</RootNamespace>
-    <AssemblyName>CtagsMSBuildParser</AssemblyName>
+    <RootNamespace>CtagsMSBuildGenerator</RootNamespace>
+    <AssemblyName>CtagsMSBuildGenerator</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">

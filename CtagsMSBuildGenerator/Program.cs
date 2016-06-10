@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 using Mono.Options;
 
-namespace CtagsMSBuildParser
+namespace CtagsMSBuildGenerator
 {
 	class MainClass
 	{
@@ -38,7 +38,7 @@ namespace CtagsMSBuildParser
 				return;
 			}
 
-			var gen = new MSBuildTagsGenerator ();
+			var gen = new MSBuildTagsGenerator (GenerateLineForVim);
 
 			if (remaining.Count == 0) {
 				FindAndProcessFiles (gen, Environment.CurrentDirectory, tagsFilename, recurse);
@@ -71,6 +71,11 @@ namespace CtagsMSBuildParser
 			Console.WriteLine ();
 			Console.WriteLine ("  -R|--recurse              Look for msbuild files recursively (default: off)");
 			Console.WriteLine ("  -o|--out <tags filename>  Tags file (default: msb-tags)");
+		}
+
+		static string GenerateLineForVim(string tagName, string tagFile, int lineNumber, string type, string comment)
+		{
+			return $"{tagName}\t{tagFile}\t{lineNumber};\"\t{type}";
 		}
 	}
 }

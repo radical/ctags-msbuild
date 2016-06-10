@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Construction;
 
-namespace CtagsMSBuildParser
+namespace CtagsMSBuildGenerator
 {
 	// TODO
 	// - items/properties created in targets
@@ -17,9 +17,11 @@ namespace CtagsMSBuildParser
 	{
 		HashSet<string> seenProjectFiles;
 		Dictionary<string, Tuple<string, string>> fullLines;
+		Func<string, string, int, string, string, string> GetTagLineFunc;
 
-		public MSBuildTagsGenerator()
+		public MSBuildTagsGenerator(Func<string, string, int, string, string, string> getTagLineFunc)
 		{
+			GetTagLineFunc = getTagLineFunc;
 			seenProjectFiles = new HashSet<string> ();
 			fullLines = new Dictionary<string, Tuple<string, string>> ();
 		}
@@ -116,8 +118,9 @@ namespace CtagsMSBuildParser
 
 		void AddTag (string tagName, string tagFile, int lineNumber, string type, string comment)
 		{
+			//$"{tagName}\t{tagFile}\t{lineNumber};\"\t{type}");
 			var key = $"{type}:{tagName}:{tagFile}:{lineNumber}";
-			fullLines[key] = Tuple.Create (tagName, $"{tagName}\t{tagFile}\t{lineNumber};\"\t{type}");
+			fullLines [key] = Tuple.Create (tagName, GetTagLineFunc (tagName, tagFile, lineNumber, type, comment));
 		}
 	}
 }
