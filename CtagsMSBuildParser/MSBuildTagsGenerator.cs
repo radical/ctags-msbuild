@@ -13,9 +13,6 @@ namespace CtagsMSBuildParser
 	// - items/properties created in targets
 	// - parallel
 
-	// BUGS
-	// - <_SharedRuntimeAssemblies Include="$(_SharedRuntimeBuildPath)v1.0\*.dll;$(_SharedRuntimeBuildPath)$(AndroidFrameworkVersion)\*.dll"/>
-	//	- this can result in multiple items, all pointing to the same file+line.. emit only one entry for this!
 	public class MSBuildTagsGenerator
 	{
 		HashSet<string> seenProjectFiles;
