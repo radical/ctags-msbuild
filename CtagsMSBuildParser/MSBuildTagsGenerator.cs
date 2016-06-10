@@ -8,6 +8,12 @@ using Microsoft.Build.Construction;
 
 namespace CtagsMSBuildParser
 {
+	// TODO
+	// - items/properties created in targets
+
+	// BUGS
+	// - <_SharedRuntimeAssemblies Include="$(_SharedRuntimeBuildPath)v1.0\*.dll;$(_SharedRuntimeBuildPath)$(AndroidFrameworkVersion)\*.dll"/>
+	//	- this can result in multiple items, all pointing to the same file+line.. emit only one entry for this!
 	public class MSBuildTagsGenerator
 	{
 		HashSet<string> seenProjectFiles;
@@ -25,6 +31,7 @@ namespace CtagsMSBuildParser
 				if (seenProjectFiles.Contains (filename))
 					return;
 
+				Console.WriteLine ($"Parsing {filename}");
 				var pc = new ProjectCollection ();
 				var p = pc.LoadProject (filename);
 
@@ -45,7 +52,9 @@ namespace CtagsMSBuildParser
 				// Write the header
 
 				sr.WriteLine ("!_TAG_FILE_FORMAT\t2\t/extended format; --format=1 will not append ;\" to lines / ");
-				sr.WriteLine ("!_TAG_FILE_SORTED\t1\t/0=unsorted, 1=sorted, 2=foldcase/");
+				//FIXME: Using 'unsorted' because vim complains that the list is not sorted if it includes tags
+				//	 beginning with `_`
+				sr.WriteLine ("!_TAG_FILE_SORTED\t0\t/0=unsorted, 1=sorted, 2=foldcase/");
 				sr.WriteLine ("!_TAG_PROGRAM_AUTHOR\tDarren Hiebert\t/dhiebert@users.sourceforge.net/");
 				sr.WriteLine ("!_TAG_PROGRAM_NAME\tExuberant Ctags\t//");
 				sr.WriteLine ("!_TAG_PROGRAM_URL\thttp://ctags.sourceforge.net\t/official site/");

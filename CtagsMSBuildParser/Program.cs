@@ -1,43 +1,63 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
+using System.Collections.Generic;
+
+using Mono.Options;
 
 namespace CtagsMSBuildParser
 {
 	class MainClass
 	{
-		static string msbuildBinDir = "/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin";
 		public static void Main (string [] args)
 		{
 			string tagsFilename = Path.Combine (Environment.CurrentDirectory, "msb-tags");
-			if (args.Length == 0) {
-				GenerateTagsRecursively (Environment.CurrentDirectory, tagsFilename);
-			} else {
-				GenerateTagsFor (args [0], tagsFilename);
-			}
-		}
+			bool recurse = false;
+			var p = new OptionSet () {
+				{"R|recurse", v => recurse = v != null},
+				{"o|out", v => tagsFilename = v}
+			};
 
-		static void GenerateTagsRecursively (string startDir, string tagsFilename)
-		{
+			var remaining = p.Parse (args);
+
+			if (recurse && remaining.Count != 0) {
+				Console.WriteLine ("Use either -R or explicit filenames, but not both");
+				PrintUsage ();
+				return;
+			}
+
 			var gen = new MSBuildTagsGenerator ();
 
+			if (remaining.Count == 0) {
+				FindAndProcessFiles (gen, Environment.CurrentDirectory, tagsFilename, recurse);
+			} else {
+				GenerateTagsFor (gen, remaining, tagsFilename);
+			}
+
+			Console.WriteLine ($"==> Generating {tagsFilename}");
+			gen.GenerateTagsFile (tagsFilename);
+		}
+
+		static void FindAndProcessFiles (MSBuildTagsGenerator gen, string startDir, string tagsFilename, bool recurse)
+		{
 			foreach (var pattern in new string [] { "*proj", "*.targets", "*.props" }) {
-				foreach (var file in Directory.GetFiles (startDir, pattern, SearchOption.AllDirectories)) {
+				foreach (var file in Directory.GetFiles (startDir, pattern, recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)) {
 					gen.ProcessFile (file);
 				}
 			}
-			Console.WriteLine ($"Generating {tagsFilename}");
-			gen.GenerateTagsFile (tagsFilename);
 		}
 
-		static void GenerateTagsFor (string filename, string tagsFilename)
+		static void GenerateTagsFor (MSBuildTagsGenerator gen, IEnumerable<string> files, string tagsFilename)
 		{
-			var gen = new MSBuildTagsGenerator ();
+			foreach (var file in files)
+				gen.ProcessFile (Path.GetFullPath(file));
+		}
 
-			gen.ProcessFile (filename);
-			Console.WriteLine ($"Generating {tagsFilename}");
-			gen.GenerateTagsFile (tagsFilename);
+		static void PrintUsage ()
+		{
+			Console.WriteLine ("Usage: ctags-msbuild [options] <filenames>");
+			Console.WriteLine ();
+			Console.WriteLine ("  -R|--recurse              Look for msbuild files recursively (default: off)");
+			Console.WriteLine ("  -o|--out <tags filename>  Tags file (default: msb-tags)");
 		}
 	}
 }
