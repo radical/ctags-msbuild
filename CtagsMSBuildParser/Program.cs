@@ -12,12 +12,25 @@ namespace CtagsMSBuildParser
 		{
 			string tagsFilename = Path.Combine (Environment.CurrentDirectory, "msb-tags");
 			bool recurse = false;
+			bool showHelp = false;
 			var p = new OptionSet () {
 				{"R|recurse", v => recurse = v != null},
-				{"o|out", v => tagsFilename = v}
+				{"o=|out=", v => tagsFilename = v},
+				{"h|help", v => showHelp = v != null}
 			};
 
-			var remaining = p.Parse (args);
+			List<string> remaining = null;
+			try {
+				remaining = p.Parse (args);
+			} catch (OptionException oe) {
+				Console.WriteLine (oe.Message);
+				return;
+			}
+
+			if (showHelp) {
+				PrintUsage ();
+				return;
+			}
 
 			if (recurse && remaining.Count != 0) {
 				Console.WriteLine ("Use either -R or explicit filenames, but not both");
