@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Specialized;
 using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Construction;
@@ -10,6 +11,7 @@ namespace CtagsMSBuildParser
 {
 	// TODO
 	// - items/properties created in targets
+	// - parallel
 
 	// BUGS
 	// - <_SharedRuntimeAssemblies Include="$(_SharedRuntimeBuildPath)v1.0\*.dll;$(_SharedRuntimeBuildPath)$(AndroidFrameworkVersion)\*.dll"/>
@@ -17,12 +19,12 @@ namespace CtagsMSBuildParser
 	public class MSBuildTagsGenerator
 	{
 		HashSet<string> seenProjectFiles;
-		List<Tuple<string, string>> fullLines;
+		Dictionary<string, Tuple<string, string>> fullLines;
 
 		public MSBuildTagsGenerator()
 		{
 			seenProjectFiles = new HashSet<string> ();
-			fullLines = new List<Tuple<string, string>> ();
+			fullLines = new Dictionary<string, Tuple<string, string>> ();
 		}
 
 		public void ProcessFile (string filename)
@@ -60,18 +62,15 @@ namespace CtagsMSBuildParser
 				sr.WriteLine ("!_TAG_PROGRAM_URL\thttp://ctags.sourceforge.net\t/official site/");
 				sr.WriteLine ("!_TAG_PROGRAM_VERSION\t5.8\t//");
 
-				fullLines.Sort ((t1, t2) => t1.Item1.CompareTo (t2.Item1));
-
-				foreach (var tup in fullLines) {
-					sr.WriteLine (tup.Item2);
+				var sorted = fullLines.Values.OrderBy (t => t.Item1).Select (t => t.Item2);
+				foreach (var tup in sorted) {
+					sr.WriteLine (tup);
 				}
 			}
 		}
 
 		void ParseProperties (Project project, HashSet<string> filesSeenHere)
 		{
-			//foreach (var lp in pc.LoadedProjects) { Console.WriteLine ($"lp: {lp.FullPath}"); foreach (var pi in lp.Properties) { Console.WriteLine ($"pi = {pi.Name}, in {pi.Xml?.Location.File} at {pi.Xml?.Location.Line}"); } }
-
 			foreach (var prop in project.Properties) {
 				if (prop.IsReservedProperty || prop.IsReservedProperty)
 					continue;
@@ -89,8 +88,6 @@ namespace CtagsMSBuildParser
 
 		void ParseItems (Project project, HashSet<string> filesSeenHere)
 		{
-			//foreach (var lp in pc.LoadedProjects) { Console.WriteLine($"lp: {lp.FullPath}"); foreach (var pi in lp.AllEvaluatedItems) { Console.WriteLine($"pi = {pi.ItemType}, in {pi.Project.FullPath} at {pi.Xml?.Location.Line}"); } }
-
 			foreach (var item in project.Items) {
 				if (item.Xml == null)
 					continue;
@@ -105,9 +102,6 @@ namespace CtagsMSBuildParser
 
 		void ParseTargets (Project project, HashSet<string> filesSeenHere)
 		{
-			//foreach (var kvp in lp.Targets) { Console.WriteLine($"{kvp.Key} -> {kvp.Value.FullPath} at {kvp.Value.Location.Line}"); } }
-
-
 			foreach (var kvp in project.Targets) {
 				var name = kvp.Key;
 				var target = kvp.Value;
@@ -125,9 +119,8 @@ namespace CtagsMSBuildParser
 
 		void AddTag (string tagName, string tagFile, int lineNumber, string type, string comment)
 		{
-
-			fullLines.Add (Tuple.Create (tagName,
-			                                       $"{tagName}\t{tagFile}\t{lineNumber};\"\t{type}"));
+			var key = $"{type}:{tagName}:{tagFile}:{lineNumber}";
+			fullLines[key] = Tuple.Create (tagName, $"{tagName}\t{tagFile}\t{lineNumber};\"\t{type}");
 		}
 	}
 }
