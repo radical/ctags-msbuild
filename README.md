@@ -10,7 +10,8 @@ OSX (this requires Mono 4.4.x+)
 Usage:
 
 `$ ./bin/Debug/ctags-msbuild -h`
-  This generates `msb-tags` file for vim
+
+It generates `msb-tags` file for vim, by default.
 
 In vim:
 
